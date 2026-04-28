@@ -64,9 +64,9 @@ class TestInbox(unittest.TestCase):
     @patch("inbox.Path.stat")
     def test_calcular_arquivo(self, mock_stat):
         # Mock stat to return a specific mtime
-        # 1704067200 is 2024-01-01 00:00:00
+        # 1717200000 is 2024-06-01
         mock_stat_obj = MagicMock()
-        mock_stat_obj.st_mtime = 1704067200
+        mock_stat_obj.st_mtime = 1717200000
         mock_stat.return_value = mock_stat_obj
 
         arq = Path("test.jpg")
