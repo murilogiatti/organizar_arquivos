@@ -121,6 +121,12 @@ def barra(atual, total, largura=40):
     fill = int(largura * pct)
     return f"\r  [{'█'*fill}{'░'*(largura-fill)}] {atual}/{total} ({pct*100:.0f}%)"
 
+def clean(text):
+    """Sanitiza texto para exibição segura no terminal, escapando caracteres não imprimíveis."""
+    if not isinstance(text, str):
+        text = str(text)
+    return "".join(c if c.isprintable() else c.encode("unicode_escape").decode("ascii") for c in text)
+
 def separador(titulo):
     print(f"\n{AZ}━━━ {titulo} {'━' * max(1, 52 - len(titulo))}{N}")
 
@@ -165,10 +171,10 @@ def main():
         print(f"{V}▶  MODO EXECUÇÃO{N}\n")
 
     if not INBOX.exists():
-        print(f"{R}Erro: pasta não encontrada: {INBOX}{N}")
+        print(f"{R}Erro: pasta não encontrada: {clean(INBOX)}{N}")
         sys.exit(1)
 
-    print(f"{AZ}📥 Inbox  : {INBOX}{N}")
+    print(f"{AZ}📥 Inbox  : {clean(INBOX)}{N}")
     print(f"{AZ}⚡ Workers: {WORKERS}{N}\n")
 
     # ══════════════════════════════════════════════════════════
@@ -219,8 +225,8 @@ def main():
             dest_dir = dest_dir / sub
         destino  = destino_seguro(dest_dir, arq.name)
         chave    = f"{cat}/{ano}{'/' + sub if sub else ''}"
-        conflito = f" {A}⚠ → {destino.name}{N}" if destino.name != arq.name else ""
-        por_destino[chave].append(f"{arq.name}{conflito}")
+        conflito = f" {A}⚠ → {clean(destino.name)}{N}" if destino.name != arq.name else ""
+        por_destino[chave].append(f"{clean(arq.name)}{conflito}")
         plano_mover.append((arq, dest_dir, destino))
 
     for chave, nomes in por_destino.items():
@@ -233,7 +239,7 @@ def main():
     if sem_ano:
         print(f"\n  {R}Sem data ({len(sem_ano)} arquivo(s)):{N}")
         for arq in sem_ano[:5]:
-            print(f"    {R}✗{N} {arq.name}")
+            print(f"    {R}✗{N} {clean(arq.name)}")
 
     # ══════════════════════════════════════════════════════════
     # FASE 4 — Move arquivos em paralelo
@@ -265,7 +271,7 @@ def main():
                 if res[0] == "ok":
                     movidos += 1
                 else:
-                    print(f"\n  {R}✗ {res[1].name}: {res[2]}{N}")
+                    print(f"\n  {R}✗ {clean(res[1].name)}: {clean(res[2])}{N}")
                     erros += 1
         print()
     else:
@@ -288,7 +294,7 @@ def main():
                 continue
             try:
                 pasta.rmdir()
-                print(f"  {A}🗑  {pasta.relative_to(INBOX)}/{N}")
+                print(f"  {A}🗑  {clean(pasta.relative_to(INBOX))}/{N}")
                 vazias += 1
             except OSError:
                 pass
