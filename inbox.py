@@ -130,23 +130,23 @@ def coletar_arquivos(raiz: Path) -> list[Path]:
     arquivos: list[Path] = []
     pastas:   list[Path] = [raiz]
 
-    while pastas:
-        lote   = pastas[:WORKERS]
-        pastas = pastas[WORKERS:]
+    def escanear(d: Path):
+        arqs, dirs = [], []
+        try:
+            for entry in os.scandir(d):
+                if entry.is_file(follow_symlinks=False):
+                    arqs.append(Path(entry.path))
+                elif entry.is_dir(follow_symlinks=False):
+                    dirs.append(Path(entry.path))
+        except PermissionError:
+            pass
+        return arqs, dirs
 
-        def escanear(d: Path):
-            arqs, dirs = [], []
-            try:
-                for entry in os.scandir(d):
-                    if entry.is_file(follow_symlinks=False):
-                        arqs.append(Path(entry.path))
-                    elif entry.is_dir(follow_symlinks=False):
-                        dirs.append(Path(entry.path))
-            except PermissionError:
-                pass
-            return arqs, dirs
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        while pastas:
+            lote   = pastas[:WORKERS]
+            pastas = pastas[WORKERS:]
 
-        with ThreadPoolExecutor(max_workers=WORKERS) as ex:
             for arqs, dirs in ex.map(escanear, lote):
                 arquivos.extend(arqs)
                 pastas.extend(dirs)
