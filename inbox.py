@@ -100,7 +100,7 @@ def calcular_arquivo(arq: Path) -> tuple[Path, str, str, int | None]:
     """Retorna (arquivo, cat, sub, ano) — chamado em paralelo."""
     try:
         ano = datetime.fromtimestamp(arq.stat().st_mtime).year
-    except Exception:
+    except (OSError, ValueError):
         ano = None
     cat, sub = classificar(arq)
     return (arq, cat, sub, ano)
